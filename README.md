@@ -1,2 +1,2 @@
-# hairdresser-queue
-Online hairdresser queue
+# online-queue-client
+Online queue client
