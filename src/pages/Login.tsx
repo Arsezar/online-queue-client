@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button, Checkbox, Form, Input } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import './pages.scss'
-import PasswordResetModal from '../components/ForgotPasswordModal/ForgotPasswordModal';
 
 const Login = () => {
   const { messageService, axiosAPI, setIsAuth, setCurrent }: any = useContext(AuthContext);
@@ -85,10 +84,8 @@ const Login = () => {
         <Form.Item name="remember" valuePropName="checked" noStyle>
           <Checkbox>Remember me</Checkbox>
         </Form.Item>
-
-        {/* //! MODAL */}
-        <PasswordResetModal />
-        {/* //! */}
+        
+        <Link to='/forgot-password'>Forgot password</Link>
 
       </Form.Item>
 

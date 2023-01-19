@@ -18,7 +18,7 @@ class AxiosAPI {
   constructor(private baseURL: string) {
     this.axios = axios.create({
       baseURL,
-      timeout: 1000,
+      timeout: 5000,
     });
 
     const authToken: string | null = localStorage.getItem("AuthToken");
@@ -116,6 +116,7 @@ class AxiosAPI {
 
   // ! CHANGE NAME OF THE METHOD !
   forgotPassword(email: string) {
+    console.log(email);
     return new Promise((resolve, reject) => {
       this.axios
         .post("/auth/forgot-password", email)

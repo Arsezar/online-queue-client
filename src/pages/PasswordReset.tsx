@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { Button, Checkbox, Form, Input, Typography } from 'antd';
 import { AuthContext } from '../context/context';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
@@ -9,24 +9,32 @@ const PasswordReset = () => {
 	const [password, setPassword] = useState<string>('');
 	const [passwordConfirm, setPasswordConfirm] = useState<string>('');
 	const { axiosAPI, messageService } = useContext(AuthContext);
-	const [seacrParams] = useSearchParams();
+	const [seacrhParams] = useSearchParams();
+	const navigate = useNavigate();
 
     const onFinish = (values: any) => {
         console.log('Success:', values);
-				axiosAPI.resetPassword()
+				const token = seacrhParams.get('token');
+				const data = { token, password };
+				console.log(data);
+				axiosAPI.resetPassword(data)
 				.then((response: any) => {
-					console.log(response);
 					messageService.open({
 						type: 'success',
 						content: 'Your password has been changed!',
 					});
+					setTimeout(() => {
+						navigate('/login');
+					}, 1000)
 				})
 				.catch((error: any) => {
 					messageService.open({
 						type: 'error',
-						content: error.response.data,
+						content: error.response.data.message,
 					});
-					console.log(error);
+					setTimeout(() => {
+						navigate('/login');
+					}, 1000)
 				})
       };
     
@@ -65,7 +73,7 @@ const PasswordReset = () => {
           <Form.Item
             label="Confirm"
             name="confirm-password"
-						hasFeedback
+			hasFeedback
             rules={[
 							{ required: true, message: 'Please confirm your password!' },
 							() => ({

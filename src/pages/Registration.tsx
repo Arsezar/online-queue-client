@@ -38,7 +38,6 @@ const Registration = () => {
   const [password, setPassword] = useState<string>('');
   const [phonePrefix, setPhonePrefix] = useState<string>('+380');
   const [agreement, setAgreement] = useState<boolean>(false);
-  const [captcha, setCapthca] = useState<string>('');
   const {messageService, axiosAPI, setCurrent} = useContext(AuthContext);
   const [form] = Form.useForm();
 
@@ -65,7 +64,6 @@ const Registration = () => {
   function handleRegistration(e: FormEvent<HTMLFormElement>) {
       e.preventDefault();
       if (!username || !email || !password || !phone) {
-        console.log(15)
         messageService.open({
           type: 'error',
           content: 'Some field is empty',
