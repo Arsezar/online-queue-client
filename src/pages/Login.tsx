@@ -7,31 +7,24 @@ import './pages.scss'
 
 const Login = () => {
   const { messageService, axiosAPI, setIsAuth, setCurrent }: any = useContext(AuthContext);
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
     setCurrent('login');
   }, [])
 
-  const onFinish = (values: any) => {
-    console.log('Success:', values);
-  };
-
   const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
-  };
+    console.log(errorInfo);
+    messageService.open({
+      type: 'error',
+      content: 'Some field is empty',
+    });
+  }
 
-  function handleLogin(e: FormEvent<HTMLFormElement>) {
-      e.preventDefault();
-      const user = { username, password };
-      if (!password || !username) {
-        messageService.open({
-          type: 'error',
-          content: 'Some field is empty',
-        });
-          return;
+  const onFinish = (values: any) => {
+    const user = { username: values.username, password: values.password };
+      if (!user.password || !user.username) {
+        return;
       }
       axiosAPI.login(user)
       .then((response: any) => {
@@ -51,9 +44,7 @@ const Login = () => {
         });
         console.log(error)
       })
-  }
-
-
+  };
 
   return (
     <Form
@@ -61,13 +52,13 @@ const Login = () => {
       className="login-form"
       initialValues={{ remember: true }}
       onFinish={onFinish}
-      onSubmitCapture={handleLogin}
+      onFinishFailed={onFinishFailed}
     >
       <Form.Item
         name="username"
         rules={[{ required: true, message: 'Please input your Username!' }]}
       >
-        <Input prefix={<UserOutlined className="site-form-item-icon" />} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
+        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
       </Form.Item>
       <Form.Item
         name="password"
@@ -77,18 +68,11 @@ const Login = () => {
           prefix={<LockOutlined className="site-form-item-icon" />}
           type="password"
           placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
         />
       </Form.Item>
-      <Form.Item>
-        <Form.Item name="remember" valuePropName="checked" noStyle>
-          <Checkbox>Remember me</Checkbox>
-        </Form.Item>
-        
+      <Form.Item> 
         <Link to='/forgot-password'>Forgot password</Link>
-
       </Form.Item>
-
       <Form.Item>
         <Button type="primary" htmlType="submit" className="login-form-button">
           Log in
@@ -98,51 +82,5 @@ const Login = () => {
     </Form>
   );
 }
-
-
-//   return (
-//     <Form
-//       name="basic"
-//       labelCol={{ span: 10 }}
-//       wrapperCol={{ span: 12 }}
-//       initialValues={{ remember: true }}
-//       onFinish={onFinish}
-//       onFinishFailed={onFinishFailed}
-//       autoComplete="off"
-//       className='login-form'
-//       onSubmitCapture={handleLogin}
-//     >
-//       <Form.Item
-//         label="Username"
-//         name="username"
-//         rules={[{ required: true, message: 'Please input your username!' }]}
-//       >
-//         <Input onChange={(e) => setUsername(e.target.value)}/>
-//       </Form.Item>
-
-//       <Form.Item
-//         label="Password"
-//         name="password"
-//         rules={[{ required: true, message: 'Please input your password!' }]}
-//       >
-//         <Input.Password onChange={(e) => setPassword(e.target.value)}/>
-//       </Form.Item>
-
-//       <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
-//         <Checkbox>Remember me</Checkbox>
-//       </Form.Item>
-
-//       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-//         <Button type="primary" htmlType="submit">
-//           Submit
-//         </Button>
-//       </Form.Item>
-
-//       <Form.Item>
-
-//       </Form.Item>
-//     </Form>
-//   );
-// }
 
 export default Login

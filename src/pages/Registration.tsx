@@ -32,24 +32,53 @@ const tailFormItemLayout = {
 const { Option } = Select;
 
 const Registration = () => {
-  const [username, setUsername] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [phonePrefix, setPhonePrefix] = useState<string>('+380');
   const [agreement, setAgreement] = useState<boolean>(false);
   const {messageService, axiosAPI, setCurrent} = useContext(AuthContext);
+  const navigate = useNavigate();
   const [form] = Form.useForm();
 
   useEffect(() => {
     setCurrent('reg');
   }, [])
-
-  const navigate = useNavigate();
   
   const onFinish = (values: any) => {
-    console.log('Success:', values);
+      const user = { 
+        username: values.username, 
+        email: values.email, 
+        password: values.password, 
+        phone
+      };
+      if(!user.email || !user.password || !phone || !user.email) {
+        return;
+      }
+      axiosAPI.registration(user)
+      .then((response: any) => {
+        console.log(response);
+        messageService.open({
+          type: 'success',
+          content: 'Success',
+        });
+        navigate('/login');
+      })
+      .catch((error: any) => {
+        console.log(error);
+        messageService.open({
+          type: 'error',
+          content: error.response.data.message,
+        });
+      });
   };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log(errorInfo);
+    messageService.open({
+      type: 'error',
+      content: 'Some field is empty',
+    });
+  }
 
   const prefixSelector = (
     <Form.Item name="prefix" noStyle>
@@ -60,35 +89,6 @@ const Registration = () => {
       </Select>
     </Form.Item>
   );
-
-  function handleRegistration(e: FormEvent<HTMLFormElement>) {
-      e.preventDefault();
-      if (!username || !email || !password || !phone) {
-        messageService.open({
-          type: 'error',
-          content: 'Some field is empty',
-        });
-        return;
-      } else {
-        const user = {username, email, password, phone};
-        axiosAPI.registration(user)
-        .then((response: any) => {
-          console.log(response);
-          messageService.open({
-            type: 'success',
-            content: 'Success',
-          });
-          navigate('/login');
-        })
-        .catch((error: any) => {
-          console.log(error);
-          messageService.open({
-            type: 'error',
-            content: error.response.data.message,
-          });
-        });
-      }
-  }
 
   function isButtonDisabled() {
     if(!agreement || !password.length) {
@@ -106,10 +106,10 @@ const Registration = () => {
       name="register"
       onFinish={onFinish}
       initialValues={{
-        prefix: '380',
+        prefix: "+380",
       }}
+      onFinishFailed={onFinishFailed}
       scrollToFirstError
-      onSubmitCapture={handleRegistration}
     >
       <Form.Item
         name="email"
@@ -125,7 +125,7 @@ const Registration = () => {
           },
         ]}
       >
-        <Input onChange={(e) => setEmail(e.target.value)}/>
+        <Input/>
       </Form.Item>
 
       <Form.Item
@@ -171,7 +171,7 @@ const Registration = () => {
         tooltip="What do you want others to call you?"
         rules={[{ required: true, message: 'Please input your username!', whitespace: true }]}
       >
-        <Input onChange={e => setUsername(e.target.value)}/>
+        <Input/>
       </Form.Item>
 
       <Form.Item

@@ -63,10 +63,9 @@ const SiderBar: React.FC = () => {
             getItem('Main', 'sub1', <FileOutlined />, [
               getItem(<Link to='/menu'> Menu </Link>, 'menu', <StarOutlined/>),
               getItem("Profile", 'sub2', <UserOutlined />, [
-                getItem(<Link to='/userdata'> User Data </Link>, 'userData', <SettingOutlined />),
-                getItem(<Link to='/profile'> Profile Info</Link>, 'profile', <InfoOutlined/>)
+                getItem(<Link to='/profile'> Info </Link>, 'profile', <InfoOutlined/>),
+                getItem(<Link to='/login' onClick={() => logout()}>Logout</Link>, 'logout', <PoweroffOutlined/>),
               ]),
-              getItem(<Link to='/login' onClick={() => logout()}>Logout</Link>, 'logout', <PoweroffOutlined/>),
             ])
           : 
             getItem('Navigation', 'sub3', <AppstoreOutlined />, [
