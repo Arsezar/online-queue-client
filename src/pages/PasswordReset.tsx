@@ -1,15 +1,16 @@
 import React, { useContext, useState } from 'react'
-import { Button, Checkbox, Form, Input, Typography } from 'antd';
+import { Button, Form, Input, Typography } from 'antd';
 import { AuthContext } from '../context/context';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { LockOutlined } from '@ant-design/icons';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const PasswordReset = () => {
 	const [password, setPassword] = useState<string>('');
 	const [passwordConfirm, setPasswordConfirm] = useState<string>('');
 	const { axiosAPI, messageService } = useContext(AuthContext);
-	const [seacrhParams] = useSearchParams();
+	const [ seacrhParams ] = useSearchParams();
 	const navigate = useNavigate();
 
     const onFinish = (values: any) => {
@@ -50,32 +51,27 @@ const PasswordReset = () => {
 				}
 			}
     
-      return (
-        <Form
-          name="basic"
-					layout="horizontal"
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 14.5 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-					<Title style={{textAlign: 'center'}} level={2}>Reset Password</Title>
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
-          >
-            <Input.Password onChange={(e) => setPassword(e.target.value)}/>
-          </Form.Item>
-    
-          <Form.Item
-            label="Confirm"
-            name="confirm-password"
-			hasFeedback
-            rules={[
-							{ required: true, message: 'Please confirm your password!' },
+			return (
+				<Form
+				  name="normal_login"
+				  className="login-form"
+				  initialValues={{ remember: true }}
+				  onFinish={onFinish}
+				>
+				  <Form.Item
+						name="password"
+						rules={[{ required: true, message: 'Please input your new password!' }]}
+				  >
+						<Input.Password
+							prefix={<LockOutlined className="site-form-item-icon" />} 
+							placeholder="New Password" 
+							onChange={e => setPassword(e.target.value)}
+						/>
+				  </Form.Item>
+				  <Form.Item
+						name="password-confirm"
+						rules={[
+							{ required: true, message: 'Please confirm your new password!' },
 							() => ({
 								validator(_, value) {
 									if (!value || password === value) {
@@ -85,17 +81,20 @@ const PasswordReset = () => {
 								},
 							}),
 						]}
-          >
-            <Input.Password onChange={(e) => setPasswordConfirm(e.target.value)}/>
-          </Form.Item>
-    
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button disabled={isButtonDisabled()} type="primary" htmlType="submit">
-              Reset
-            </Button>
-          </Form.Item>
-        </Form>
-      );
-}
+				  >
+						<Input.Password
+					  	prefix={<LockOutlined className="site-form-item-icon" />}
+					  	placeholder="Confirm your new password"
+					  	onChange={e => setPasswordConfirm(e.target.value)}
+						/>
+				  </Form.Item>
+				  <Form.Item>
+						<Button disabled={isButtonDisabled()} type="primary" htmlType="submit" className="login-form-button">
+					  	Reset Password
+						</Button>
+				  </Form.Item>
+				</Form>
+			  );
+			};
 
 export default PasswordReset

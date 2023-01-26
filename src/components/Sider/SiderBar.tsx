@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   FileOutlined,
   UserOutlined,
-  SettingOutlined,
+  TableOutlined,
   InfoOutlined,
   StarOutlined,
   PoweroffOutlined,
@@ -64,6 +64,7 @@ const SiderBar: React.FC = () => {
               getItem(<Link to='/menu'> Menu </Link>, 'menu', <StarOutlined/>),
               getItem("Profile", 'sub2', <UserOutlined />, [
                 getItem(<Link to='/profile'> Info </Link>, 'profile', <InfoOutlined/>),
+                getItem(<Link to='/queues'>Logout</Link>, 'queues', <TableOutlined/>),
                 getItem(<Link to='/login' onClick={() => logout()}>Logout</Link>, 'logout', <PoweroffOutlined/>),
               ]),
             ])

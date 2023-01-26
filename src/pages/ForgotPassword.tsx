@@ -2,11 +2,13 @@ import React, { FormEvent, useContext, useState } from 'react'
 import { MailOutlined } from '@ant-design/icons';
 import { Button, Form, Input } from 'antd';
 import { AuthContext } from '../context/context';
+import { useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>('');
   const [emailConfirmation, setEmailConfirmation] = useState<string>('');
   const { axiosAPI, messageService } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   function isButtonDisabled() {
     if(!emailConfirmation.length || !email.length) {
@@ -34,6 +36,9 @@ const ForgotPassword = () => {
           type: 'success',
           content: 'The email with reset link has been sended!',
         });
+        setTimeout(() => {
+          navigate('/login');
+        }, 1000)
       })
       .catch((error: any) => {
         console.log(error);
@@ -73,12 +78,13 @@ const ForgotPassword = () => {
             }
             return Promise.reject(new Error('The two emails do not match!'));
           },
-        }),]}
+        }),
+      ]}
       >
         <Input
           onChange={e => setEmailConfirmation(e.target.value)}
           prefix={<MailOutlined className="site-form-item-icon" />}
-          placeholder="Confirm Your email"
+          placeholder="Confirm your email"
         />
       </Form.Item>
       <Form.Item>

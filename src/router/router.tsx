@@ -6,10 +6,12 @@ import Registration from "../pages/Registration";
 import Profile from "../pages/Profile";
 import PasswordReset from "../pages/PasswordReset";
 import ForgotPassword from "../pages/ForgotPassword";
+import Queues from "../pages/Queues";
 
 export const privateRoutes = [
     { path: '/', element: <Menu /> },
     { path: '/profile', element: <Profile /> },
+    { path: '/queues', element: <Queues /> },
     { path: '*', element: <Navigate to='/' replace /> },
 ]
 
