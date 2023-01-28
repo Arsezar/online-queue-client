@@ -1,49 +1,51 @@
-import React, {useContext, useEffect, useState, FormEvent} from 'react'
-import { AuthContext } from '../context/context';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button, Checkbox, Form, Input } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import './pages.scss'
+import React, { useContext, useEffect, useState, FormEvent } from "react";
+import { AuthContext } from "../context/context";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, Checkbox, Form, Input } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import "./pages.scss";
 
 const Login = () => {
-  const { messageService, axiosAPI, setIsAuth, setCurrent }: any = useContext(AuthContext);
+  const { messageService, axiosAPI, setIsAuth, setCurrent }: any =
+    useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setCurrent('login');
-  }, [])
+    setCurrent("login");
+  }, []);
 
   const onFinishFailed = (errorInfo: any) => {
     console.log(errorInfo);
     messageService.open({
-      type: 'error',
-      content: 'Some field is empty',
+      type: "error",
+      content: "Some field is empty",
     });
-  }
+  };
 
   const onFinish = (values: any) => {
     const user = { username: values.username, password: values.password };
-      if (!user.password || !user.username) {
-        return;
-      }
-      axiosAPI.login(user)
+    if (!user.password || !user.username) {
+      return;
+    }
+    axiosAPI
+      .login(user)
       .then((response: any) => {
         console.log(response);
         messageService.open({
-          type: 'success',
-          content: 'Success',
+          type: "success",
+          content: "Success",
         });
         setIsAuth(true);
-        navigate('/');
+        navigate("/");
         navigate(0);
       })
       .catch((error: any) => {
         messageService.open({
-          type: 'error',
+          type: "error",
           content: error.response.data.message,
         });
-        console.log(error)
-      })
+        console.log(error);
+      });
   };
 
   return (
@@ -56,13 +58,16 @@ const Login = () => {
     >
       <Form.Item
         name="username"
-        rules={[{ required: true, message: 'Please input your Username!' }]}
+        rules={[{ required: true, message: "Please input your Username!" }]}
       >
-        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
+        <Input
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="Username"
+        />
       </Form.Item>
       <Form.Item
         name="password"
-        rules={[{ required: true, message: 'Please input your Password!' }]}
+        rules={[{ required: true, message: "Please input your Password!" }]}
       >
         <Input.Password
           prefix={<LockOutlined className="site-form-item-icon" />}
@@ -70,8 +75,8 @@ const Login = () => {
           placeholder="Password"
         />
       </Form.Item>
-      <Form.Item> 
-        <Link to='/forgot-password'>Forgot password</Link>
+      <Form.Item>
+        <Link to="/forgot-password">Forgot password</Link>
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" className="login-form-button">
@@ -81,6 +86,6 @@ const Login = () => {
       </Form.Item>
     </Form>
   );
-}
+};
 
-export default Login
+export default Login;
