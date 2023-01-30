@@ -1,8 +1,8 @@
-import React, { FormEvent, useContext, useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./pages.scss";
-import { Button, Checkbox, Col, Form, Input, Row, Select } from "antd";
+import { Button, Checkbox, Form, Input, Select } from "antd";
 import { AuthContext } from "../context/context";
 
 const { Option } = Select;
@@ -44,7 +44,7 @@ const Registration = () => {
         console.log(error);
         messageService.open({
           type: "error",
-          content: error.response.data.message,
+          content: error.response?.data?.message,
         });
       });
   };
