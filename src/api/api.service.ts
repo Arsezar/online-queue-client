@@ -143,6 +143,70 @@ class AxiosAPI {
         });
     });
   }
+
+  getQueues() {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .get("/queues/get-queues")
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  addClientToQueue(queueId: string, username: string) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .post("/queues/add-user", { username, queueId })
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  createPlaceInQueue(
+    queueId: string,
+    username: string,
+    phone: string,
+    email: string,
+    password: string
+  ) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .post("/queues/create-place", {
+          username,
+          queueId,
+          phone,
+          email,
+          password,
+        })
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  createQueue(name: string) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .post("/queues/create-queue", { name })
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
 }
 
 export default new AxiosAPI("http://localhost:3000");

@@ -6,14 +6,8 @@ import validator from "validator";
 const { Title } = Typography;
 
 const Profile: React.FC = () => {
-  const {
-    setCurrent,
-    axiosAPI,
-    userData,
-    messageService,
-    setIsAuth,
-    setUserData,
-  } = useContext(AuthContext);
+  const { setCurrent, axiosAPI, userData, messageService, setUserData } =
+    useContext(AuthContext);
   const [email, setEmail] = useState<string>(userData.email);
   const [phone, setPhone] = useState<string>(userData.phone);
   const [password, setPassword] = useState<string>("");
@@ -72,12 +66,7 @@ const Profile: React.FC = () => {
       <Title className="profileTitle" level={2}>
         Change user data
       </Title>
-      <Form
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 14 }}
-        layout="horizontal"
-        onSubmitCapture={dateChangeSubmit}
-      >
+      <Form layout="vertical" onSubmitCapture={dateChangeSubmit}>
         <Form.Item label="Username">
           <Input value={userData.username} disabled={true} />
         </Form.Item>
@@ -105,7 +94,7 @@ const Profile: React.FC = () => {
         <Form.Item
           name="password-confirm"
           rules={[{ required: true, message: "Please confirm your password!" }]}
-          label="Confirm"
+          label="Confirm Password"
         >
           <Input.Password
             onChange={(e) => setPasswordConfirm(e.target.value)}

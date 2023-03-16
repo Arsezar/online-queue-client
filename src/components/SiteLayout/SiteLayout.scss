@@ -8,6 +8,10 @@
   align-items: center;
 }
 
+.site-layout {
+  position: relative;
+}
+
 .site-layout-background {
   padding: 24;
   max-height: 360px;
@@ -15,4 +19,10 @@
 
 .layoutFooter {
   text-align: center;
+}
+
+@media (max-width: 991.98px) {
+  .layoutContent {
+    margin-top: 40px;
+  }
 }

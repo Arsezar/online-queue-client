@@ -5,7 +5,8 @@
 
 .login-form,
 .register-form,
-.profileForm {
+.profileForm,
+.queueForm {
   min-width: 26vw;
 }
 
@@ -32,4 +33,42 @@
 }
 #components-form-demo-normal-login .login-form-button {
   width: 100%;
+}
+
+.queuesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  .ant-form {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    border-radius: 4px;
+    padding: 9px;
+    margin: 19px;
+  }
+}
+
+.usersContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .user {
+    margin: 10px;
+    .userIcon {
+      margin: 0 8px;
+    }
+  }
+}
+
+.createQueueButton {
+  position: absolute;
+  top: 12vh;
+  left: 4%;
+  right: 4%;
+  bottom: 0;
+}
+
+@media (max-width: 991.98px) {
+  .createQueueButton {
+    top: 10vh;
+  }
 }
