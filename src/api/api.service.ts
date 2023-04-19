@@ -207,6 +207,19 @@ class AxiosAPI {
         });
     });
   }
+
+  findQueueById(id: string) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .get(`/queues/${id}`)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
 }
 
 export default new AxiosAPI("http://localhost:3000");

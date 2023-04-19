@@ -72,3 +72,21 @@
     top: 10vh;
   }
 }
+
+.queueDetailsContainer {
+  width: 90%;
+  height: 100%;
+  .usersCols {
+    margin: 15px 0;
+  }
+}
+
+.placeTableContainer,
+.clientTableContainer {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.tableButtonsContainer {
+  margin-bottom: 8px;
+}

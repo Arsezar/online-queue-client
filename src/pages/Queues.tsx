@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   SmileOutlined,
   UserOutlined,
-  UserAddOutlined,
-  SolutionOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, Modal, Typography } from "antd";
@@ -56,37 +54,6 @@ const useResetFormOnCloseModal = ({
   }, [form, prevOpen, open]);
 };
 
-const ClientModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI } = useContext(AuthContext);
-  const [form] = Form.useForm();
-
-  useResetFormOnCloseModal({
-    form,
-    open,
-  });
-
-  const onOk = () => {
-    // !!
-    // axiosAPI.addClientToQueue();
-    form.submit();
-  };
-
-  return (
-    <Modal
-      title="Add Client to Queue"
-      open={open}
-      onOk={onOk}
-      onCancel={onCancel}
-    >
-      <Form form={form} layout="vertical" name="clientForm">
-        <Form.Item name="name" label="Username" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
-};
-
 const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
   const { axiosAPI } = useContext(AuthContext);
   const [form] = Form.useForm();
@@ -127,71 +94,6 @@ const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
   );
 };
 
-const PlaceModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI } = useContext(AuthContext);
-  const [form] = Form.useForm();
-
-  useResetFormOnCloseModal({
-    form,
-    open,
-  });
-
-  const onOk = () => {
-    form.submit();
-  };
-
-  const onFinish = (values: any) => {
-    console.log(values);
-    axiosAPI
-      .createQueue({
-        username: values.username,
-        email: values.email,
-        password: values.password,
-        phone: values.phone,
-        roles: "employee",
-        queue: 1,
-      })
-      .then((reponse: any) => {
-        console.log(reponse);
-      })
-      .catch((error: any) => {
-        console.log(error);
-      });
-  };
-
-  return (
-    <Modal
-      title="Add Place to Queue"
-      open={open}
-      onOk={onOk}
-      onCancel={onCancel}
-    >
-      <Form form={form} layout="vertical" name="placeForm" onFinish={onFinish}>
-        <Form.Item
-          name="username"
-          label="Username"
-          rules={[{ required: true }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[{ required: true }]}
-        >
-          <Input.Password />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
-};
-
 const Queues: React.FC = () => {
   const { setCurrent, axiosAPI } = useContext(AuthContext);
   const [queues, setQueues] = useState<Queue[]>([]);
@@ -207,27 +109,7 @@ const Queues: React.FC = () => {
       });
   }, []);
 
-  const [openClientModal, setOpenClientModal] = useState(false);
-
-  const [openPlaceModal, setOpenPlaceModal] = useState(false);
-
   const [openQueueModal, setOpenQueueModal] = useState(false);
-
-  const showClientModal = () => {
-    setOpenClientModal(true);
-  };
-
-  const hideClientModal = () => {
-    setOpenClientModal(false);
-  };
-
-  const showPlaceModal = () => {
-    setOpenPlaceModal(true);
-  };
-
-  const hidePlaceModal = () => {
-    setOpenPlaceModal(false);
-  };
 
   const showQueueModal = () => {
     setOpenQueueModal(true);
@@ -252,12 +134,6 @@ const Queues: React.FC = () => {
             if (name === "queueForm") {
               setOpenQueueModal(false);
             }
-            if (name === "placeForm") {
-              setOpenPlaceModal(false);
-            }
-            if (name === "clientForm") {
-              setOpenClientModal(false);
-            }
           }}
         >
           {queues.map((queue: Queue) => (
@@ -280,35 +156,45 @@ const Queues: React.FC = () => {
                 {() => {
                   const users: User[] = queue.usersQueue;
                   const places: Place[] = queue.places;
-                  return users.length ? (
+                  return users.length || places.length ? (
                     <div className="usersContainer">
-                      <Typography.Text className="ant-form-text" strong>
-                        Place list:
-                      </Typography.Text>
-                      {places.map((place: Place) => (
-                        <li key={place.username} className="user">
-                          <Avatar
-                            icon={<UserOutlined />}
-                            className="userIcon"
-                          />
-                          {place.username}
-                        </li>
-                      ))}
+                      {places.length ? (
+                        <>
+                          <Typography.Text className="ant-form-text" strong>
+                            Place list:
+                          </Typography.Text>
+                          {places.map((place: Place) => (
+                            <ul>
+                              <li key={place.username} className="user">
+                                <Avatar
+                                  icon={<UserOutlined />}
+                                  className="userIcon"
+                                />
+                                {place.username}
+                              </li>
+                            </ul>
+                          ))}
+                        </>
+                      ) : null}
 
-                      <Typography.Text className="ant-form-text" strong>
-                        Client list:
-                      </Typography.Text>
-                      <ul>
-                        {users.map((user: User) => (
-                          <li key={user.username} className="user">
-                            <Avatar
-                              icon={<UserOutlined />}
-                              className="userIcon"
-                            />
-                            {user.username}
-                          </li>
-                        ))}
-                      </ul>
+                      {users.length ? (
+                        <>
+                          <Typography.Text className="ant-form-text" strong>
+                            Client list:
+                          </Typography.Text>
+                          <ul>
+                            {users.map((user: User) => (
+                              <li key={user.username} className="user">
+                                <Avatar
+                                  icon={<UserOutlined />}
+                                  className="userIcon"
+                                />
+                                {user.username}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : null}
                     </div>
                   ) : (
                     <Typography.Text className="ant-form-text" type="secondary">
@@ -318,12 +204,6 @@ const Queues: React.FC = () => {
                 }}
               </Form.Item>
               <Form.Item>
-                {/* <Button htmlType="button" onClick={showClientModal}>
-                  Add Client <UserAddOutlined />
-                </Button>
-                <Button htmlType="button" onClick={showPlaceModal}>
-                  Add Place <SolutionOutlined />
-                </Button> */}
                 <Link to={`/queue-details?queue=${queue._id}`}>
                   <Button htmlType="button">
                     Details <InfoCircleOutlined />
@@ -332,8 +212,6 @@ const Queues: React.FC = () => {
               </Form.Item>
             </Form>
           ))}
-          <ClientModalForm open={openClientModal} onCancel={hideClientModal} />
-          <PlaceModalForm open={openPlaceModal} onCancel={hidePlaceModal} />
           <QueueModalForm open={openQueueModal} onCancel={hideQueueModal} />
         </Form.Provider>
       </div>
