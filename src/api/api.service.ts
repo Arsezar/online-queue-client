@@ -1,4 +1,5 @@
 import axios, { Axios } from "axios";
+import isEmail from "validator/lib/isEmail";
 
 interface User {
   username: string;
@@ -7,9 +8,24 @@ interface User {
   email: string;
 }
 
+interface Place extends User {
+  roles: string;
+  queueId: string;
+}
+
 interface UserLogin {
   username: string;
   password: string;
+}
+
+interface Appointment {
+  place: string;
+  time: Date;
+}
+
+interface userDeletion {
+  queueId: string;
+  userId: string;
 }
 
 class AxiosAPI {
@@ -18,7 +34,7 @@ class AxiosAPI {
   constructor(private baseURL: string) {
     this.axios = axios.create({
       baseURL,
-      timeout: 5000,
+      timeout: 9000,
     });
 
     const authToken: string | null = localStorage.getItem("AuthToken");
@@ -157,10 +173,14 @@ class AxiosAPI {
     });
   }
 
-  addClientToQueue(queueId: string, username: string) {
+  addClientToQueue(
+    queueId: string,
+    username: string,
+    appointment: Appointment
+  ) {
     return new Promise((resolve, reject) => {
       this.axios
-        .post("/queues/add-user", { username, queueId })
+        .post("/queues/add-client", { username, queueId, appointment })
         .then((response) => {
           resolve(response);
         })
@@ -170,22 +190,23 @@ class AxiosAPI {
     });
   }
 
-  createPlaceInQueue(
-    queueId: string,
-    username: string,
-    phone: string,
-    email: string,
-    password: string
-  ) {
+  addPlaceToQueue(queueId: string, username: string) {
     return new Promise((resolve, reject) => {
       this.axios
-        .post("/queues/create-place", {
-          username,
-          queueId,
-          phone,
-          email,
-          password,
+        .post("/queues/add-place", { username, queueId })
+        .then((response) => {
+          resolve(response);
         })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  createPlaceInQueue(place: Place) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .post("/queues/create-place", place)
         .then((response) => {
           resolve(response);
         })
@@ -199,6 +220,45 @@ class AxiosAPI {
     return new Promise((resolve, reject) => {
       this.axios
         .post("/queues/create-queue", { name })
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  deleteQueue(queueId: string) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .patch("/queues/delete-queue", { queueId })
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  deleteClient(data: userDeletion) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .patch("/queues/delete-client", data)
+        .then((response) => {
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  deletePlace(data: userDeletion) {
+    return new Promise((resolve, reject) => {
+      this.axios
+        .patch("/queues/delete-place", data)
         .then((response) => {
           resolve(response);
         })

@@ -3,13 +3,15 @@ import {
   SmileOutlined,
   UserOutlined,
   InfoCircleOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, Modal, Typography } from "antd";
 import type { FormInstance } from "antd/es/form";
 import { AuthContext } from "../context/context";
 import { Link } from "react-router-dom";
+import { AxiosError, AxiosResponse } from "axios";
 
-interface User {
+interface Client {
   username: string;
   email: string;
   phone: string;
@@ -18,12 +20,12 @@ interface User {
   roles: string;
 }
 
-interface Place extends User {}
+interface Place extends Client {}
 
 interface Queue {
   name: string;
   places: Place[];
-  usersQueue: User[];
+  clients: Client[];
   __v: number;
   _id: string;
 }
@@ -55,7 +57,7 @@ const useResetFormOnCloseModal = ({
 };
 
 const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI } = useContext(AuthContext);
+  const { axiosAPI, getQueues } = useContext(AuthContext);
   const [form] = Form.useForm();
 
   useResetFormOnCloseModal({
@@ -73,6 +75,7 @@ const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
       .createQueue(values.name)
       .then((reponse: any) => {
         console.log(reponse);
+        getQueues();
       })
       .catch((error: any) => {
         console.log(error);
@@ -95,21 +98,25 @@ const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
 };
 
 const Queues: React.FC = () => {
-  const { setCurrent, axiosAPI } = useContext(AuthContext);
-  const [queues, setQueues] = useState<Queue[]>([]);
+  const { setCurrent, axiosAPI, getQueues, queues } = useContext(AuthContext);
+  const [openQueueModal, setOpenQueueModal] = useState(false);
+
   useEffect(() => {
     setCurrent("queues");
-    axiosAPI
-      .getQueues()
-      .then((response: any) => {
-        setQueues(response.data);
-      })
-      .catch((error: any) => {
-        console.log(error);
-      });
+    getQueues();
   }, []);
 
-  const [openQueueModal, setOpenQueueModal] = useState(false);
+  const deleteQueue = (queueId: string) => {
+    axiosAPI
+      .deleteQueue(queueId)
+      .then((response: AxiosResponse) => {
+        console.log(response);
+        getQueues();
+      })
+      .catch((error: AxiosError) => {
+        console.log(error);
+      });
+  };
 
   const showQueueModal = () => {
     setOpenQueueModal(true);
@@ -138,23 +145,34 @@ const Queues: React.FC = () => {
         >
           {queues.map((queue: Queue) => (
             <Form name="basicForm" className="queueForm" key={queue._id}>
-              <Form.Item>
-                <Typography.Text
-                  className="ant-form-text"
-                  strong
-                  style={{ fontSize: "20px" }}
-                  title="Queue name"
-                >
-                  {queue.name}
-                </Typography.Text>
-              </Form.Item>
+              <div className="queueFormHeader">
+                <Form.Item>
+                  <Typography.Text
+                    className="ant-form-text"
+                    strong
+                    style={{ fontSize: "20px" }}
+                    title="Queue name"
+                  >
+                    {queue.name}
+                  </Typography.Text>
+                </Form.Item>
+                <Form.Item>
+                  <Button
+                    type="text"
+                    danger
+                    onClick={() => deleteQueue(queue._id)}
+                  >
+                    <CloseOutlined />
+                  </Button>
+                </Form.Item>
+              </div>
               <Form.Item
                 shouldUpdate={(prevValues, curValues) =>
                   prevValues.users !== curValues.users
                 }
               >
                 {() => {
-                  const users: User[] = queue.usersQueue;
+                  const users: Client[] = queue.clients;
                   const places: Place[] = queue.places;
                   return users.length || places.length ? (
                     <div className="usersContainer">
@@ -183,13 +201,13 @@ const Queues: React.FC = () => {
                             Client list:
                           </Typography.Text>
                           <ul>
-                            {users.map((user: User) => (
-                              <li key={user.username} className="user">
+                            {users.map((client: Client) => (
+                              <li key={client.username} className="user">
                                 <Avatar
                                   icon={<UserOutlined />}
                                   className="userIcon"
                                 />
-                                {user.username}
+                                {client.username}
                               </li>
                             ))}
                           </ul>

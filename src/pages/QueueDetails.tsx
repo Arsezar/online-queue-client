@@ -10,7 +10,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import type { ColumnsType, TableProps } from "antd/es/table";
+import type { TableProps } from "antd/es/table";
 import Column from "antd/es/table/Column";
 import {
   CloseOutlined,
@@ -19,6 +19,19 @@ import {
   UserAddOutlined,
   PlayCircleOutlined,
 } from "@ant-design/icons";
+import { Cascader } from "antd";
+import { AxiosError, AxiosResponse } from "axios";
+
+interface Option {
+  value: string | number;
+  label: string;
+  children?: Option[];
+}
+
+interface Appointment {
+  place: string;
+  time: Date;
+}
 
 interface DataType {
   key: React.Key;
@@ -26,12 +39,12 @@ interface DataType {
   email: string;
   phone: string;
   userId: string;
-  queue: string;
+  queueId: string;
   roles: string;
-  appointment: Date | null;
+  appointment: Appointment | null;
 }
 
-const onChange: TableProps<DataType>["onChange"] = (
+const tableOnChange: TableProps<DataType>["onChange"] = (
   pagination,
   filters,
   sorter,
@@ -42,7 +55,7 @@ const onChange: TableProps<DataType>["onChange"] = (
 interface Queue {
   name: string;
   places: DataType[];
-  usersQueue: DataType[];
+  clients: DataType[];
   __v: number;
   _id: string;
 }
@@ -73,9 +86,50 @@ const useResetFormOnCloseModal = ({
   }, [form, prevOpen, open]);
 };
 
+const options: Option[] = [
+  {
+    value: "zhejiang",
+    label: "Zhejiang",
+    children: [
+      {
+        value: "hangzhou",
+        label: "Hangzhou",
+        children: [
+          {
+            value: "xihu",
+            label: "West Lake",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    value: "jiangsu",
+    label: "Jiangsu",
+    children: [
+      {
+        value: "nanjing",
+        label: "Nanjing",
+        children: [
+          {
+            value: "zhonghuamen",
+            label: "Zhong Hua Men",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const cascaderOnChange = (value: any) => {
+  console.log(value);
+};
+
 const ClientModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI } = useContext(AuthContext);
+  const { axiosAPI, queueData, getQueueData, setQueueData } =
+    useContext(AuthContext);
   const [form] = Form.useForm();
+  const [searchParams] = useSearchParams();
 
   useResetFormOnCloseModal({
     form,
@@ -83,9 +137,25 @@ const ClientModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
   });
 
   const onOk = () => {
-    // !!
-    // axiosAPI.addClientToQueue();
     form.submit();
+  };
+
+  const onFinish = (values: any) => {
+    const queueId = searchParams.get("queue");
+    console.log(values);
+    axiosAPI
+      .addClientToQueue({
+        username: values.username,
+        queueId: queueId,
+        appointment: { place: values.place, time: values.time },
+      })
+      .then((response: any) => {
+        console.log(response);
+        getQueueData(queueId);
+      })
+      .catch((error: any) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -95,18 +165,38 @@ const ClientModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
       onOk={onOk}
       onCancel={onCancel}
     >
-      <Form form={form} layout="vertical" name="clientForm">
+      <Form form={form} layout="vertical" name="clientForm" onFinish={onFinish}>
         <Form.Item name="name" label="Username" rules={[{ required: true }]}>
           <Input />
+        </Form.Item>
+        <Form.Item>
+          <Cascader
+            options={options}
+            onChange={cascaderOnChange}
+            placeholder="Select place"
+          />
+        </Form.Item>
+        <Form.Item>
+          <Cascader
+            options={options}
+            onChange={cascaderOnChange}
+            placeholder="Select date"
+          />
         </Form.Item>
       </Form>
     </Modal>
   );
 };
 
-const PlaceModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI } = useContext(AuthContext);
+const PlaceCreationModalForm: React.FC<ModalFormProps> = ({
+  open,
+  onCancel,
+}) => {
+  const { setCurrent, axiosAPI, queueData, getQueueData, setQueueData } =
+    useContext(AuthContext);
+  const [searchParams] = useSearchParams();
   const [form] = Form.useForm();
+  const queueId = searchParams.get("queue");
 
   useResetFormOnCloseModal({
     form,
@@ -119,17 +209,19 @@ const PlaceModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
 
   const onFinish = (values: any) => {
     console.log(values);
+    const place = {
+      username: values.username,
+      password: values.password,
+      phone: values.phone,
+      email: values.email,
+      queueId: queueId,
+      roles: "employee",
+    };
     axiosAPI
-      .createQueue({
-        username: values.username,
-        email: values.email,
-        password: values.password,
-        phone: values.phone,
-        roles: "employee",
-        queue: 1,
-      })
-      .then((reponse: any) => {
-        console.log(reponse);
+      .createPlaceInQueue(place)
+      .then((response: any) => {
+        console.log(response);
+        getQueueData(queueId);
       })
       .catch((error: any) => {
         console.log(error);
@@ -138,12 +230,17 @@ const PlaceModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
 
   return (
     <Modal
-      title="Add Place to Queue"
+      title="Create Place for Queue"
       open={open}
       onOk={onOk}
       onCancel={onCancel}
     >
-      <Form form={form} layout="vertical" name="placeForm" onFinish={onFinish}>
+      <Form
+        form={form}
+        layout="vertical"
+        name="placeCreationForm"
+        onFinish={onFinish}
+      >
         <Form.Item
           name="username"
           label="Username"
@@ -169,13 +266,81 @@ const PlaceModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
   );
 };
 
-const QueueDetails: React.FC = () => {
-  const { setCurrent, axiosAPI } = useContext(AuthContext);
+const PlaceAdditionModalForm: React.FC<ModalFormProps> = ({
+  open,
+  onCancel,
+}) => {
+  const { setCurrent, axiosAPI, queueData, getQueueData, setQueueData } =
+    useContext(AuthContext);
   const [searchParams] = useSearchParams();
-  const [queueData, setQueueData] = useState<Queue>();
-  const [loading, setLoading] = useState(false);
-  const [openClientModal, setOpenClientModal] = useState(false);
-  const [openPlaceModal, setOpenPlaceModal] = useState(false);
+  const [form] = Form.useForm();
+  const queueId = searchParams.get("queue");
+
+  useResetFormOnCloseModal({
+    form,
+    open,
+  });
+
+  const onOk = () => {
+    form.submit();
+  };
+
+  const onFinish = (values: any) => {
+    console.log(values);
+    axiosAPI
+      .addPlaceToQueue(values.username, queueId)
+      .then((response: any) => {
+        console.log(response);
+        getQueueData(queueId);
+      })
+      .catch((error: any) => {
+        console.log(error);
+      });
+  };
+
+  return (
+    <Modal
+      title="Add Place to Queue"
+      open={open}
+      onOk={onOk}
+      onCancel={onCancel}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="placeAdditionForm"
+        onFinish={onFinish}
+      >
+        <Form.Item
+          name="username"
+          label="Username"
+          rules={[{ required: true }]}
+        >
+          <Input />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+const QueueDetails: React.FC = () => {
+  const { setCurrent, axiosAPI, queueData, getQueueData, setQueueData } =
+    useContext(AuthContext);
+  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [openClientModal, setOpenClientModal] = useState<boolean>(false);
+  const [openPlaceCreationModal, setOpenPlaceCreationModal] =
+    useState<boolean>(false);
+  const [openPlaceAdditionModal, setOpenPlaceAdditionModal] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setCurrent("queue-details");
+    const queueId = searchParams.get("queue");
+    getQueueData(queueId);
+    setLoading(false);
+  }, []);
 
   const showClientModal = () => {
     setOpenClientModal(true);
@@ -185,35 +350,45 @@ const QueueDetails: React.FC = () => {
     setOpenClientModal(false);
   };
 
-  const showPlaceModal = () => {
-    setOpenPlaceModal(true);
+  const showPlaceCreationModal = () => {
+    setOpenPlaceCreationModal(true);
   };
 
-  const hidePlaceModal = () => {
-    setOpenPlaceModal(false);
+  const hidePlaceCreationModal = () => {
+    setOpenPlaceCreationModal(false);
   };
 
-  useEffect(() => {
-    setLoading(true);
-    setCurrent("queue-details");
-    const queueId = searchParams.get("queue");
+  const showPlaceAdditionModal = () => {
+    setOpenPlaceAdditionModal(true);
+  };
+
+  const hidePlaceAdditionModal = () => {
+    setOpenPlaceAdditionModal(false);
+  };
+
+  const deletePlace = (place: DataType) => {
+    console.log(place);
+    const deletionData = { userId: place.userId, queueId: place.queueId };
     axiosAPI
-      .findQueueById(queueId)
-      .then((response: any) => {
-        setQueueData(response.data);
-        setLoading(false);
+      .deletePlace(deletionData)
+      .then((response: AxiosResponse) => {
+        console.log(response);
+        getQueueData(place.queueId);
       })
-      .catch((error: any) => {
+      .catch((error: AxiosError) => {
         console.log(error);
       });
-  }, []);
+  };
 
   return (
     <div className="queueDetailsContainer">
       <Form.Provider
         onFormFinish={(name) => {
-          if (name === "placeForm") {
-            setOpenPlaceModal(false);
+          if (name === "placeCreationForm") {
+            setOpenPlaceCreationModal(false);
+          }
+          if (name === "placeAdditionForm") {
+            setOpenPlaceAdditionModal(false);
           }
           if (name === "clientForm") {
             setOpenClientModal(false);
@@ -223,16 +398,20 @@ const QueueDetails: React.FC = () => {
         <div className="placeTableContainer">
           <Typography.Title level={4}>Place table</Typography.Title>
           <div className="tableButtonsContainer">
-            <Button shape="round" onClick={showPlaceModal}>
+            <Button shape="round" onClick={showPlaceCreationModal}>
               <UserAddOutlined />
-              Add place
+              Create Place
+            </Button>
+            <Button shape="round" onClick={showPlaceAdditionModal}>
+              <UserAddOutlined />
+              Add Place
             </Button>
           </div>
           <Table
             size="small"
             pagination={{ hideOnSinglePage: true }}
             dataSource={queueData?.places}
-            onChange={onChange}
+            onChange={tableOnChange}
             loading={loading}
           >
             <Column
@@ -255,13 +434,17 @@ const QueueDetails: React.FC = () => {
               key="actions"
               render={(_: any, place: DataType) => (
                 <>
-                  <Button danger type="text">
+                  {/* <Button danger type="text" title="Cancel user">
                     <CloseOutlined />
                   </Button>
-                  <Button type="text">
+                  <Button type="text" title="Approve user">
                     <CheckOutlined />
-                  </Button>
-                  <Button type="text">
+                  </Button> */}
+                  <Button
+                    type="text"
+                    title="Delete user"
+                    onClick={() => deletePlace(place)}
+                  >
                     <DeleteOutlined />
                   </Button>
                 </>
@@ -284,8 +467,8 @@ const QueueDetails: React.FC = () => {
           <Table
             size="small"
             pagination={{ hideOnSinglePage: true }}
-            dataSource={queueData?.usersQueue}
-            onChange={onChange}
+            dataSource={queueData?.clients}
+            onChange={tableOnChange}
             loading={loading}
           >
             <Column
@@ -306,20 +489,22 @@ const QueueDetails: React.FC = () => {
             <Column
               title="Appointment"
               key="actions"
-              render={(_: any, client: DataType) => <>{client.appointment}</>}
+              render={(_: any, client: DataType) => (
+                <>{client.appointment?.time}</>
+              )}
             />
             <Column
               title="Actions"
               key="actions"
               render={(_: any, client: DataType) => (
                 <>
-                  <Button danger type="text">
+                  <Button danger type="text" title="Cancel user">
                     <CloseOutlined />
                   </Button>
-                  <Button type="text">
+                  <Button type="text" title="Approve user">
                     <CheckOutlined />
                   </Button>
-                  <Button type="text">
+                  <Button type="text" title="Delete user">
                     <DeleteOutlined />
                   </Button>
                 </>
@@ -327,7 +512,14 @@ const QueueDetails: React.FC = () => {
             />
           </Table>
           <ClientModalForm open={openClientModal} onCancel={hideClientModal} />
-          <PlaceModalForm open={openPlaceModal} onCancel={hidePlaceModal} />
+          <PlaceCreationModalForm
+            open={openPlaceCreationModal}
+            onCancel={hidePlaceCreationModal}
+          />
+          <PlaceAdditionModalForm
+            open={openPlaceAdditionModal}
+            onCancel={hidePlaceAdditionModal}
+          />
         </div>
       </Form.Provider>
     </div>

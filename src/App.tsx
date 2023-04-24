@@ -7,10 +7,43 @@ import { BrowserRouter } from "react-router-dom";
 import AppRouter from "./components/AppRouter/AppRouter";
 import axiosAPI from "./api/api.service";
 
+interface Appointment {
+  place: string;
+  time: Date;
+}
+
+interface Client {
+  appointment: Appointment;
+  approved: boolean;
+  cancelled: boolean;
+  email: string;
+  key: string;
+  password: string;
+  phone: string;
+  processed: boolean;
+  refreshToken: string;
+  roles: string;
+  username: string;
+  __v: 0;
+  _id: string;
+}
+
+interface Place extends Client {}
+
+interface Queue {
+  name: string;
+  places: Place[];
+  clients: Client[];
+  __v: number;
+  _id: string;
+}
+
 export default function App() {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [current, setCurrent] = useState<string>("1");
-  const [userData, setUserData] = useState("");
+  const [userData, setUserData] = useState<Client>();
+  const [queues, setQueues] = useState<Queue[]>([]);
+  const [queueData, setQueueData] = useState<Queue>();
   const [messageService, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -30,7 +63,6 @@ export default function App() {
             .getUser(response.data.username)
             .then((response: any) => {
               setUserData(response.data);
-              console.log("success!!!!");
             })
             .catch((error) => {
               console.log(error);
@@ -40,6 +72,28 @@ export default function App() {
           console.log(error);
         });
     }
+  }
+
+  async function getQueues() {
+    axiosAPI
+      .getQueues()
+      .then((response: any) => {
+        setQueues(response.data);
+      })
+      .catch((error: any) => {
+        console.log(error);
+      });
+  }
+
+  async function getQueueData(queueId: string) {
+    axiosAPI
+      .findQueueById(queueId)
+      .then((response: any) => {
+        setQueueData(response.data);
+      })
+      .catch((error: any) => {
+        console.log(error);
+      });
   }
 
   return (
@@ -54,6 +108,11 @@ export default function App() {
         userData,
         setUserData,
         authProfileGetVerify,
+        queues,
+        getQueues,
+        queueData,
+        setQueueData,
+        getQueueData,
       }}
     >
       {contextHolder}
