@@ -10,6 +10,7 @@ import type { FormInstance } from "antd/es/form";
 import { AuthContext } from "../context/context";
 import { Link } from "react-router-dom";
 import { AxiosError, AxiosResponse } from "axios";
+import QueueModalForm from "../components/QueueModalForm/QueueModalForm";
 
 interface Client {
   username: string;
@@ -28,11 +29,6 @@ interface Queue {
   clients: Client[];
   __v: number;
   _id: string;
-}
-
-interface ModalFormProps {
-  open: boolean;
-  onCancel: () => void;
 }
 
 // reset form fields when modal is form, closed
@@ -56,49 +52,9 @@ const useResetFormOnCloseModal = ({
   }, [form, prevOpen, open]);
 };
 
-const QueueModalForm: React.FC<ModalFormProps> = ({ open, onCancel }) => {
-  const { axiosAPI, getQueues } = useContext(AuthContext);
-  const [form] = Form.useForm();
-
-  useResetFormOnCloseModal({
-    form,
-    open,
-  });
-
-  const onOk = () => {
-    form.submit();
-  };
-
-  const onFinish = (values: any) => {
-    console.log(values);
-    axiosAPI
-      .createQueue(values.name)
-      .then((reponse: any) => {
-        console.log(reponse);
-        getQueues();
-      })
-      .catch((error: any) => {
-        console.log(error);
-      });
-  };
-
-  return (
-    <Modal title="Create Queue" open={open} onOk={onOk} onCancel={onCancel}>
-      <Form form={form} layout="vertical" name="queueForm" onFinish={onFinish}>
-        <Form.Item
-          name="name"
-          label="Name of the Queue"
-          rules={[{ required: true }]}
-        >
-          <Input />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
-};
-
 const Queues: React.FC = () => {
-  const { setCurrent, axiosAPI, getQueues, queues } = useContext(AuthContext);
+  const { setCurrent, axiosAPI, getQueues, queues, messageService } =
+    useContext(AuthContext);
   const [openQueueModal, setOpenQueueModal] = useState(false);
 
   useEffect(() => {
@@ -109,12 +65,20 @@ const Queues: React.FC = () => {
   const deleteQueue = (queueId: string) => {
     axiosAPI
       .deleteQueue(queueId)
-      .then((response: AxiosResponse) => {
+      .then((response: any) => {
         console.log(response);
         getQueues();
+        messageService.open({
+          type: "success",
+          content: "Queue deleted",
+        });
       })
-      .catch((error: AxiosError) => {
+      .catch((error: any) => {
         console.log(error);
+        messageService.open({
+          type: "error",
+          content: error.response?.data?.message,
+        });
       });
   };
 
@@ -230,7 +194,11 @@ const Queues: React.FC = () => {
               </Form.Item>
             </Form>
           ))}
-          <QueueModalForm open={openQueueModal} onCancel={hideQueueModal} />
+          <QueueModalForm
+            useResetFormOnCloseModal={useResetFormOnCloseModal}
+            open={openQueueModal}
+            onCancel={hideQueueModal}
+          />
         </Form.Provider>
       </div>
     </>

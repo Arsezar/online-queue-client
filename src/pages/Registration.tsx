@@ -36,7 +36,7 @@ const Registration = () => {
         console.log(response);
         messageService.open({
           type: "success",
-          content: "Success",
+          content: "Success!",
         });
         navigate("/login");
       })

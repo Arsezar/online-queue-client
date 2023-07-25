@@ -1,5 +1,4 @@
 import axios, { Axios } from "axios";
-import isEmail from "validator/lib/isEmail";
 
 interface User {
   username: string;
@@ -20,13 +19,15 @@ interface UserLogin {
 
 interface Appointment {
   place: string;
-  time: Date;
+  time: string;
 }
 
-interface userDeletion {
+interface UserDeletion {
   queueId: string;
   userId: string;
 }
+
+interface PlaceAddition {}
 
 class AxiosAPI {
   private axios: Axios;
@@ -190,10 +191,10 @@ class AxiosAPI {
     });
   }
 
-  addPlaceToQueue(queueId: string, username: string) {
+  addPlaceToQueue(data: PlaceAddition) {
     return new Promise((resolve, reject) => {
       this.axios
-        .post("/queues/add-place", { username, queueId })
+        .post("/queues/add-place", data)
         .then((response) => {
           resolve(response);
         })
@@ -242,7 +243,7 @@ class AxiosAPI {
     });
   }
 
-  deleteClient(data: userDeletion) {
+  deleteClient(data: UserDeletion) {
     return new Promise((resolve, reject) => {
       this.axios
         .patch("/queues/delete-client", data)
@@ -255,7 +256,7 @@ class AxiosAPI {
     });
   }
 
-  deletePlace(data: userDeletion) {
+  deletePlace(data: UserDeletion) {
     return new Promise((resolve, reject) => {
       this.axios
         .patch("/queues/delete-place", data)
